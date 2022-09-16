@@ -35,6 +35,17 @@ let setupAccordion = () => {
       });
     });
   }
+
+  let accRename = document.getElementsByClassName("accRename");
+  for (i = 0; i < accRename.length; i++) {
+    let parent = accRename[i].parentElement.parentElement;
+    accRename[i].addEventListener("click", () => {
+      let delElement = parent.getAttribute("id");
+      warehouse.renameHandler(delElement, "oooo").then(() => {
+        updater();
+      });
+    });
+  }
 };
 
 export function updater() {
@@ -101,6 +112,12 @@ function listenForClicks() {
       browser.tabs.create({
         url: "https://allen505.github.io/save-for-later/contribute"
       });
+    } else if (e.target.id == "renameBtn") {
+      const newName = document.getElementById('nameInput');
+      const bgp = chrome.extension.getBackgroundPage();
+      bgp.console.log(newName)
+      bgp.console.log(newName.value)
+      bgp.console.log('renameBtn clicked!');
     }
   });
 }

@@ -56,6 +56,8 @@ function createList(storeObj) {
       let accOpen = document.createElement("button");
       let delImg = document.createElement("img");
       let accDelete = document.createElement("button");
+      let renameImg = document.createElement("img");
+      let accRename = document.createElement("button");
       accButton.textContent = obj.title;
       accButton.setAttribute("class", "btn btn-link accButton");
       accButton.setAttribute("contentEditable", "true");
@@ -127,6 +129,12 @@ function createList(storeObj) {
       accDelete.setAttribute("class", "btn btn-link accDelete");
       accDelete.appendChild(delImg);
 
+      renameImg.setAttribute("src", "./../icons/rename.svg");
+      renameImg.setAttribute("class", "icon");
+
+      accRename.setAttribute("class", "btn btn-link accRename");
+      accRename.appendChild(renameImg);
+
       butDiv.setAttribute("class", "butDiv")
 
       accDiv.setAttribute("class", "accDiv");
@@ -142,6 +150,7 @@ function createList(storeObj) {
 
       butDiv.appendChild(accOpen);
       butDiv.appendChild(accExpand);
+      // butDiv.appendChild(accRename);
       butDiv.appendChild(accDelete);
 
       accDiv.appendChild(butDiv);
@@ -283,6 +292,44 @@ export async function updateHandler() {
 export async function deleteHandler(key) {
   let returnPromise = new Promise((resolve, reject) => {
     let returnValue = browser.storage.local.remove(key);
+    if (returnValue === undefined) {
+      reject("Error occured while deleting");
+    } else {
+      resolve("Deleted successfully");
+    }
+  });
+  return await returnPromise;
+}
+
+export async function renameHandler(key, name) {
+  let returnPromise = new Promise((resolve, reject) => {
+    let returnValue = browser.storage.local.get(key);
+    const bgp = chrome.extension.getBackgroundPage();
+    bgp.console.log('renameHandler', key, name);
+    returnValue.then(res => {
+      bgp.console.log(res)
+      const currentName = res[key].title;
+      const newName = document.getElementById('nameInput').value;
+      if (!newName || newName.length ==0) {
+        bgp.console.warn('newName is empty, rename error');
+        return;
+      }
+      const idx = currentName.indexOf('|');
+      let newTitle = newName;
+      if (idx >= 0) {
+        newTitle += currentName(idx);
+      }
+      res[key].title = newTitle;
+      bgp.console.log(res)
+      // update newName
+      browser.storage.local.set(res).then(res => {
+      }, error => {
+        reject("Error occured while rename.")
+      }) 
+    }, error => {
+      bgp.console.error(error)
+    })
+
     if (returnValue === undefined) {
       reject("Error occured while deleting");
     } else {
